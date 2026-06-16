@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>لیست داوطلبین</title>
     <style>
         * {
             box-sizing: border-box;
@@ -92,15 +92,21 @@
             border-top: 1px solid #e9edf4;
             padding-top: 18px;
         }
-        .qr-info {
-            background: #f8fafc;
-            border: 1px dashed #94a3b8;
+        .status-bar {
+            background: #f1f5f9;
+            padding: 10px 15px;
             border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            margin-top: 15px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
             color: #475569;
-            font-size: 0.9rem;
+            text-align: center;
+        }
+        .status-bar .sync-status {
+            color: #22c55e;
+            font-weight: 500;
+        }
+        .status-bar .sync-status.error {
+            color: #ef4444;
         }
         @media (max-width: 480px) {
             .container { padding: 15px 12px; }
@@ -110,9 +116,14 @@
 <body>
 <div class="container">
     <div style="text-align: center;">
-        <span class="public-badge"> اسامی داوطلبان نمایندگی مجمع عمومی عادی و فوق العاده</span>
+        <span class="public-badge">📱 صفحه عمومی</span>
     </div>
-    <h1></h1>
+    <h1>📋 لیست داوطلبین</h1>
+
+    <div class="status-bar">
+        <span>📡 وضعیت: <span class="sync-status" id="syncStatus">در حال بارگذاری...</span></span>
+    </div>
+
     <div class="table-wrap">
         <table>
             <thead>
@@ -123,84 +134,183 @@
             </tbody>
         </table>
     </div>
-    <div class="qr-info">
-        🔄 این صفحه به‌صورت خودکار با داده‌های پنل مدیریت به‌روز می‌شود
-    </div>
     <div class="footer-note">
+        🔄 این صفحه به‌صورت خودکار با GitHub همگام‌سازی می‌شود
     </div>
 </div>
 
 <script>
-    (function() {
-        const tbody = document.getElementById('tableBody');
-        const STORAGE_KEY = 'tableData';
+    // ========== تنظیمات GitHub ==========
+    // 🔴 این مقادیر را با اطلاعات خود جایگزین کنید
+    const GITHUB_TOKEN = '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';
+    const REPO_OWNER = 'FrDehghani';      // ← نام کاربری خود را وارد کنید
+    const REPO_NAME = 'tetebar-majma';    // ← نام مخزن خود را وارد کنید
+    const ISSUE_LABEL = 'table-data';
+    // =====================================
 
-        function loadData() {
+    const STORAGE_KEY = 'tableData';
+    let currentData = [];
+
+    // ========== توابع GitHub Issues (فقط خواندن) ==========
+
+    async function findDataIssue() {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${ISSUE_LABEL}&state=all`;
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('خطا در دریافت Issues');
+        }
+        const issues = await response.json();
+        return issues.length > 0 ? issues[0] : null;
+    }
+
+    async function loadFromGitHub() {
+        try {
+            const issue = await findDataIssue();
+            if (issue) {
+                const data = JSON.parse(issue.body);
+                return data;
+            }
+            return null;
+        } catch (error) {
+            console.error('خطا در بارگذاری از GitHub:', error);
+            return null;
+        }
+    }
+
+    // ========== توابع نمایش ==========
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const data = currentData;
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            const tr = document.createElement('tr');
+            tr.className = 'empty-row';
+            const td = document.createElement('td');
+            td.colSpan = 3;
+            td.textContent = '— داده‌ای وجود ندارد —';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+
+        // مرتب‌سازی بر اساس نام‌خانوادگی
+        const persianAlphabet = 'آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی';
+        data.sort((a, b) => {
+            const firstCharA = a.lastName?.charAt(0) || '';
+            const firstCharB = b.lastName?.charAt(0) || '';
+            const indexA = persianAlphabet.indexOf(firstCharA);
+            const indexB = persianAlphabet.indexOf(firstCharB);
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+            return (a.lastName || '').localeCompare(b.lastName || '');
+        });
+
+        data.forEach((item, index) => {
+            const tr = document.createElement('tr');
+
+            const tdNumber = document.createElement('td');
+            tdNumber.className = 'row-number';
+            tdNumber.textContent = index + 1;
+
+            const tdName = document.createElement('td');
+            tdName.textContent = item.firstName || '—';
+
+            const tdLast = document.createElement('td');
+            tdLast.textContent = item.lastName || '—';
+
+            tr.appendChild(tdNumber);
+            tr.appendChild(tdName);
+            tr.appendChild(tdLast);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateStatus(message, type = 'success') {
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.textContent = message;
+        statusEl.className = 'sync-status';
+        if (type === 'error') {
+            statusEl.classList.add('error');
+        }
+    }
+
+    // ========== راه‌اندازی ==========
+
+    async function init() {
+        updateStatus('🔄 اتصال به GitHub...', '');
+
+        try {
+            const data = await loadFromGitHub();
+            if (data !== null && data.length > 0) {
+                currentData = data;
+                // ذخیره در LocalStorage برای مواقع قطعی اینترنت
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                renderTable();
+                updateStatus('✅ داده از GitHub بارگذاری شد', 'success');
+            } else {
+                // اگر GitHub خالی بود، از LocalStorage بخوان
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        currentData = JSON.parse(stored);
+                        renderTable();
+                        updateStatus('📁 داده از حافظه محلی بارگذاری شد', '');
+                    } catch (e) {
+                        currentData = [];
+                        renderTable();
+                        updateStatus('📭 داده‌ای وجود ندارد', '');
+                    }
+                } else {
+                    currentData = [];
+                    renderTable();
+                    updateStatus('📭 داده‌ای وجود ندارد', '');
+                }
+            }
+        } catch (error) {
+            console.error('خطا:', error);
+            updateStatus('⚠️ خطا در اتصال به GitHub', 'error');
+            // Fallback به LocalStorage
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 try {
-                    return JSON.parse(stored);
+                    currentData = JSON.parse(stored);
+                    renderTable();
                 } catch (e) {
-                    return [];
+                    currentData = [];
+                    renderTable();
                 }
+            } else {
+                currentData = [];
+                renderTable();
             }
-            return [];
         }
+    }
 
-        function renderTable() {
-            const data = loadData();
-            tbody.innerHTML = '';
+    // بارگذاری اولیه
+    init();
 
-            if (data.length === 0) {
-                const tr = document.createElement('tr');
-                tr.className = 'empty-row';
-                const td = document.createElement('td');
-                td.colSpan = 3;
-                td.textContent = '— داده‌ای وجود ندارد —';
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-                return;
+    // به‌روزرسانی خودکار هر ۱۰ ثانیه
+    setInterval(async () => {
+        try {
+            const data = await loadFromGitHub();
+            if (data !== null) {
+                currentData = data;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                renderTable();
+                updateStatus('✅ به‌روزرسانی شد', 'success');
             }
-
-            // مرتب‌سازی بر اساس نام‌خانوادگی
-            const persianAlphabet = 'آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی';
-            data.sort((a, b) => {
-                const firstCharA = a.lastName.charAt(0);
-                const firstCharB = b.lastName.charAt(0);
-                const indexA = persianAlphabet.indexOf(firstCharA);
-                const indexB = persianAlphabet.indexOf(firstCharB);
-                if (indexA !== -1 && indexB !== -1) {
-                    return indexA - indexB;
-                }
-                return a.lastName.localeCompare(b.lastName);
-            });
-
-            data.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                
-                const tdNumber = document.createElement('td');
-                tdNumber.className = 'row-number';
-                tdNumber.textContent = index + 1;
-                
-                const tdName = document.createElement('td');
-                tdName.textContent = item.firstName || '—';
-                
-                const tdLast = document.createElement('td');
-                tdLast.textContent = item.lastName || '—';
-
-                tr.appendChild(tdNumber);
-                tr.appendChild(tdName);
-                tr.appendChild(tdLast);
-                tbody.appendChild(tr);
-            });
+        } catch (error) {
+            console.log('خطا در به‌روزرسانی خودکار');
         }
-
-        // بارگذاری اولیه
-        renderTable();
-
-        // به‌روزرسانی خودکار هر 2 ثانیه (برای هماهنگی با صفحه مدیریت)
-        setInterval(renderTable, 2000);
-    })();
+    }, 10000);
 </script>
 
 </body>
