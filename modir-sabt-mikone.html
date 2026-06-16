@@ -366,5 +366,338 @@
     })();
 </script>
 
+<script>
+    // ========== تنظیمات GitHub ==========
+    // 🔴 این مقادیر را با اطلاعات خود جایگزین کنید
+    const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN';  // از https://github.com/settings/tokens دریافت کنید
+    const REPO_OWNER = 'YOUR_USERNAME';        // نام کاربری GitHub
+    const REPO_NAME = 'YOUR_REPO_NAME';        // نام مخزن
+    const ISSUE_LABEL = 'table-data';          // برچسب برای پیدا کردن Issue
+    // =====================================
+
+    // کلید ذخیره‌سازی محلی (برای Fallback)
+    const STORAGE_KEY = 'tableData';
+    let currentData = [];
+
+    // ========== توابع GitHub Issues ==========
+    
+    // پیدا کردن Issue با برچسب مشخص
+    async function findDataIssue() {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${ISSUE_LABEL}&state=all`;
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('خطا در دریافت Issues');
+        }
+        const issues = await response.json();
+        return issues.length > 0 ? issues[0] : null;
+    }
+
+    // ایجاد Issue جدید
+    async function createDataIssue(data) {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+                title: 'Table Data Storage',
+                body: JSON.stringify(data, null, 2),
+                labels: [ISSUE_LABEL]
+            })
+        });
+        if (!response.ok) {
+            throw new Error('خطا در ایجاد Issue');
+        }
+        return await response.json();
+    }
+
+    // به‌روزرسانی Issue موجود
+    async function updateDataIssue(issueNumber, data) {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueNumber}`;
+        const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+                body: JSON.stringify(data, null, 2)
+            })
+        });
+        if (!response.ok) {
+            throw new Error('خطا در به‌روزرسانی Issue');
+        }
+        return await response.json();
+    }
+
+    // بارگذاری داده از GitHub
+    async function loadFromGitHub() {
+        try {
+            const issue = await findDataIssue();
+            if (issue) {
+                const data = JSON.parse(issue.body);
+                return data;
+            }
+            return null;
+        } catch (error) {
+            console.error('خطا در بارگذاری از GitHub:', error);
+            return null;
+        }
+    }
+
+    // ذخیره داده در GitHub
+    async function saveToGitHub(data) {
+        try {
+            const issue = await findDataIssue();
+            if (issue) {
+                await updateDataIssue(issue.number, data);
+            } else {
+                await createDataIssue(data);
+            }
+            return true;
+        } catch (error) {
+            console.error('خطا در ذخیره در GitHub:', error);
+            return false;
+        }
+    }
+
+    // ========== توابع مدیریت داده‌ها ==========
+
+    function loadLocalData() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try { return JSON.parse(stored); } 
+            catch (e) { return []; }
+        }
+        return [];
+    }
+
+    function saveLocalData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const data = currentData;
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            const tr = document.createElement('tr');
+            tr.className = 'empty-row';
+            const td = document.createElement('td');
+            td.colSpan = 4;
+            td.textContent = '— سطری وجود ندارد —';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+
+        const persianAlphabet = 'آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی';
+        data.sort((a, b) => {
+            const firstCharA = a.lastName?.charAt(0) || '';
+            const firstCharB = b.lastName?.charAt(0) || '';
+            const indexA = persianAlphabet.indexOf(firstCharA);
+            const indexB = persianAlphabet.indexOf(firstCharB);
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+            return (a.lastName || '').localeCompare(b.lastName || '');
+        });
+
+        data.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            
+            const tdNumber = document.createElement('td');
+            tdNumber.className = 'row-number';
+            tdNumber.textContent = index + 1;
+            
+            const tdName = document.createElement('td');
+            tdName.textContent = item.firstName || '—';
+            
+            const tdLast = document.createElement('td');
+            tdLast.textContent = item.lastName || '—';
+            
+            const tdAction = document.createElement('td');
+            tdAction.style.textAlign = 'left';
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-danger';
+            deleteBtn.textContent = '✕';
+            deleteBtn.style.padding = '4px 12px';
+            deleteBtn.style.borderRadius = '30px';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.addEventListener('click', function() {
+                deleteRow(index);
+            });
+            tdAction.appendChild(deleteBtn);
+
+            tr.appendChild(tdNumber);
+            tr.appendChild(tdName);
+            tr.appendChild(tdLast);
+            tr.appendChild(tdAction);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteRow(index) {
+        currentData.splice(index, 1);
+        saveLocalData(currentData);
+        saveToGitHub(currentData);
+        renderTable();
+        updateStatus('✅ همگام‌سازی شد', 'success');
+    }
+
+    function addRow(firstName, lastName) {
+        currentData.push({ firstName, lastName });
+        saveLocalData(currentData);
+        saveToGitHub(currentData);
+        renderTable();
+        updateStatus('✅ همگام‌سازی شد', 'success');
+    }
+
+    function addFromInputs() {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        if (!firstName && !lastName) {
+            alert('لطفاً حداقل یکی از فیلدها را پر کنید.');
+            return;
+        }
+        addRow(firstName, lastName);
+        document.getElementById('firstName').value = '';
+        document.getElementById('lastName').value = '';
+        document.getElementById('firstName').focus();
+    }
+
+    function clearAll() {
+        if (confirm('آیا مطمئن هستید که می‌خواهید همه داده‌ها را حذف کنید؟')) {
+            currentData = [];
+            saveLocalData(currentData);
+            saveToGitHub(currentData);
+            renderTable();
+            updateStatus('✅ همگام‌سازی شد', 'success');
+        }
+    }
+
+    function updateStatus(message, type = 'success') {
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.textContent = message;
+        statusEl.className = 'sync-status';
+        if (type === 'error') {
+            statusEl.classList.add('error');
+        }
+    }
+
+    // ========== همگام‌سازی ==========
+
+    async function syncWithGitHub() {
+        updateStatus('🔄 در حال همگام‌سازی...', '');
+        try {
+            const data = await loadFromGitHub();
+            if (data !== null) {
+                currentData = data;
+                saveLocalData(data);
+                renderTable();
+                updateStatus('✅ همگام‌سازی شد', 'success');
+            } else {
+                // اگر داده‌ای در GitHub نبود، داده‌های محلی را به GitHub بفرست
+                const localData = loadLocalData();
+                if (localData.length > 0) {
+                    await saveToGitHub(localData);
+                    currentData = localData;
+                    renderTable();
+                    updateStatus('✅ داده‌ها به GitHub ارسال شد', 'success');
+                } else {
+                    // هر دو خالی هستند
+                    currentData = [];
+                    renderTable();
+                    updateStatus('📭 داده‌ای وجود ندارد', '');
+                }
+            }
+        } catch (error) {
+            console.error('خطا:', error);
+            updateStatus('❌ خطا در همگام‌سازی', 'error');
+            // Fallback به داده‌های محلی
+            currentData = loadLocalData();
+            renderTable();
+        }
+    }
+
+    // ========== رویدادها ==========
+
+    document.getElementById('addBtn').addEventListener('click', addFromInputs);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+    document.getElementById('syncBtn').addEventListener('click', syncWithGitHub);
+
+    document.getElementById('firstName').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); }
+    });
+    document.getElementById('lastName').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); }
+    });
+
+    // ========== راه‌اندازی اولیه ==========
+
+    async function init() {
+        updateStatus('🔄 اتصال به GitHub...', '');
+        
+        // ابتدا از GitHub بخوان
+        try {
+            const data = await loadFromGitHub();
+            if (data !== null && data.length > 0) {
+                currentData = data;
+                saveLocalData(data);
+                renderTable();
+                updateStatus('✅ داده از GitHub بارگذاری شد', 'success');
+            } else {
+                // اگر GitHub خالی بود، از LocalStorage بخوان
+                const localData = loadLocalData();
+                if (localData.length > 0) {
+                    currentData = localData;
+                    await saveToGitHub(localData);
+                    renderTable();
+                    updateStatus('✅ داده‌ها به GitHub ارسال شد', 'success');
+                } else {
+                    // اگر هیچ داده‌ای نبود، نمونه‌ها را اضافه کن
+                    const samples = [
+                        { firstName: 'علی', lastName: 'محمدی' },
+                        { firstName: 'سارا', lastName: 'احمدی' },
+                        { firstName: 'رضا', lastName: 'کریمی' },
+                        { firstName: 'نازنین', lastName: 'زارعی' }
+                    ];
+                    currentData = samples;
+                    saveLocalData(samples);
+                    await saveToGitHub(samples);
+                    renderTable();
+                    updateStatus('✅ داده‌های نمونه ایجاد شد', 'success');
+                }
+            }
+        } catch (error) {
+            console.error('خطا در راه‌اندازی:', error);
+            updateStatus('⚠️ استفاده از داده‌های محلی', 'error');
+            currentData = loadLocalData();
+            if (currentData.length === 0) {
+                const samples = [
+                    { firstName: 'علی', lastName: 'محمدی' },
+                    { firstName: 'سارا', lastName: 'احمدی' }
+                ];
+                currentData = samples;
+                saveLocalData(samples);
+            }
+            renderTable();
+        }
+    }
+
+    init();
+</script>
+
+    
 </body>
 </html>
