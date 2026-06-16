@@ -142,9 +142,22 @@
             font-size: 0.8rem;
             border-radius: 30px;
             cursor: pointer;
+            border: none;
         }
         .btn-danger:hover {
             background: #fee2e2;
+        }
+        .btn-success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .btn-success:hover {
+            background: #bbf7d0;
         }
         .footer-note {
             text-align: center;
@@ -163,6 +176,26 @@
             display: inline-block;
             margin-bottom: 10px;
         }
+        .status-bar {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-bar .sync-status {
+            color: #22c55e;
+            font-weight: 500;
+        }
+        .status-bar .sync-status.error {
+            color: #ef4444;
+        }
         @media (max-width: 480px) {
             .container { padding: 15px 12px; }
         }
@@ -174,6 +207,12 @@
         <span class="admin-badge">🔐 پنل مدیریت</span>
     </div>
     <h1>اسامی داوطلبین</h1>
+
+    <div class="status-bar">
+        <span>📡 وضعیت: <span class="sync-status" id="syncStatus">در حال اتصال...</span></span>
+        <button class="btn btn-success" id="syncBtn">🔄 همگام‌سازی با GitHub</button>
+    </div>
+
     <div class="table-wrap">
         <table id="mainTable">
             <thead>
@@ -190,203 +229,38 @@
             <input type="text" id="lastName" placeholder="نام‌خانوادگی" aria-label="نام‌خانوادگی">
         </div>
         <button class="btn btn-primary" id="addBtn">➕ افزودن</button>
-        
+        <button class="btn btn-danger" id="clearBtn">🗑️ حذف همه</button>
     </div>
     <div class="footer-note">
-        داده‌ها به‌صورت خودکار در مرورگر ذخیره می‌شوند · صفحه عمومی: index.html
+        داده‌ها در GitHub Issues ذخیره می‌شوند · بین همه دستگاه‌ها مشترک است
     </div>
 </div>
-
-<script>
-    (function() {
-        const tbody = document.getElementById('tableBody');
-        const firstNameInput = document.getElementById('firstName');
-        const lastNameInput = document.getElementById('lastName');
-        const addBtn = document.getElementById('addBtn');
-        const clearBtn = document.getElementById('clearBtn');
-
-        // کلید ذخیره‌سازی در LocalStorage
-        const STORAGE_KEY = 'tableData';
-
-        // ----- بارگذاری داده از LocalStorage -----
-        function loadData() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                try {
-                    return JSON.parse(stored);
-                } catch (e) {
-                    return [];
-                }
-            }
-            return [];
-        }
-
-        // ----- ذخیره داده در LocalStorage -----
-        function saveData(data) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-
-        // ----- نمایش داده‌ها در جدول -----
-        function renderTable() {
-            const data = loadData();
-            
-            // پاک کردن جدول (به جز هدر)
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                const tr = document.createElement('tr');
-                tr.className = 'empty-row';
-                const td = document.createElement('td');
-                td.colSpan = 4;
-                td.textContent = '— سطری وجود ندارد —';
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-                return;
-            }
-
-            // مرتب‌سازی بر اساس نام‌خانوادگی
-            const persianAlphabet = 'آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی';
-            data.sort((a, b) => {
-                const firstCharA = a.lastName.charAt(0);
-                const firstCharB = b.lastName.charAt(0);
-                const indexA = persianAlphabet.indexOf(firstCharA);
-                const indexB = persianAlphabet.indexOf(firstCharB);
-                if (indexA !== -1 && indexB !== -1) {
-                    return indexA - indexB;
-                }
-                return a.lastName.localeCompare(b.lastName);
-            });
-
-            // نمایش ردیف‌ها
-            data.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                
-                const tdNumber = document.createElement('td');
-                tdNumber.className = 'row-number';
-                tdNumber.textContent = index + 1;
-                
-                const tdName = document.createElement('td');
-                tdName.textContent = item.firstName || '—';
-                
-                const tdLast = document.createElement('td');
-                tdLast.textContent = item.lastName || '—';
-                
-                const tdAction = document.createElement('td');
-                tdAction.style.textAlign = 'left';
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn-danger';
-                deleteBtn.textContent = '✕';
-                deleteBtn.style.padding = '4px 12px';
-                deleteBtn.style.border = 'none';
-                deleteBtn.style.borderRadius = '30px';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.addEventListener('click', function() {
-                    deleteRow(index);
-                });
-                tdAction.appendChild(deleteBtn);
-
-                tr.appendChild(tdNumber);
-                tr.appendChild(tdName);
-                tr.appendChild(tdLast);
-                tr.appendChild(tdAction);
-                tbody.appendChild(tr);
-            });
-        }
-
-        // ----- حذف یک ردیف -----
-        function deleteRow(index) {
-            const data = loadData();
-            data.splice(index, 1);
-            saveData(data);
-            renderTable();
-        }
-
-        // ----- افزودن ردیف جدید -----
-        function addRow(firstName, lastName) {
-            const data = loadData();
-            data.push({ firstName, lastName });
-            saveData(data);
-            renderTable();
-            firstNameInput.value = '';
-            lastNameInput.value = '';
-            firstNameInput.focus();
-        }
-
-        // ----- افزودن از ورودی‌ها -----
-        function addFromInputs() {
-            const firstName = firstNameInput.value.trim();
-            const lastName = lastNameInput.value.trim();
-            if (!firstName && !lastName) {
-                alert('لطفاً حداقل یکی از فیلدها را پر کنید.');
-                return;
-            }
-            addRow(firstName, lastName);
-        }
-
-        // ----- حذف همه داده‌ها -----
-        function clearAll() {
-            if (confirm('آیا مطمئن هستید که می‌خواهید همه داده‌ها را حذف کنید؟')) {
-                saveData([]);
-                renderTable();
-            }
-        }
-
-        // ----- رویدادها -----
-        addBtn.addEventListener('click', addFromInputs);
-        clearBtn.addEventListener('click', clearAll);
-        firstNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addFromInputs();
-            }
-        });
-        lastNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addFromInputs();
-            }
-        });
-
-        // ----- مقداردهی اولیه با داده‌های نمونه (اگر خالی باشد) -----
-        function initSampleData() {
-            const data = loadData();
-            if (data.length === 0) {
-                const samples = [
-                    { firstName: 'علی', lastName: 'محمدی' },
-                    { firstName: 'سارا', lastName: 'احمدی' },
-                    { firstName: 'رضا', lastName: 'کریمی' },
-                    { firstName: 'نازنین', lastName: 'زارعی' }
-                ];
-                saveData(samples);
-            }
-            renderTable();
-        }
-
-        initSampleData();
-    })();
-</script>
 
 <script>
     // ========== تنظیمات GitHub ==========
     // 🔴 این مقادیر را با اطلاعات خود جایگزین کنید
     const GITHUB_TOKEN = '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';
-    const REPO_OWNER = 'FrDehghani';
-    const REPO_NAME = 'tetebar-majma';
-    const ISSUE_LABEL = 'table';          // برچسب برای پیدا کردن Issue
+    const REPO_OWNER = 'Frehghani';      // ← نام کاربری خود را وارد کنید
+    const REPO_NAME = 'tetebar-majma';    // ← نام مخزن خود را وارد کنید
+    const ISSUE_LABEL = 'table-data';
     // =====================================
 
-    // کلید ذخیره‌سازی محلی (برای Fallback)
     const STORAGE_KEY = 'tableData';
     let currentData = [];
 
+    const tbody = document.getElementById('tableBody');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
     // ========== توابع GitHub Issues ==========
-    
-    // پیدا کردن Issue با برچسب مشخص
+
     async function findDataIssue() {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${ISSUE_LABEL}&state=all`;
         const response = await fetch(url, {
             headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Authorization': `token ${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}`,
                 'Accept': 'application/vnd.github.v3+json'
             }
         });
@@ -397,7 +271,6 @@
         return issues.length > 0 ? issues[0] : null;
     }
 
-    // ایجاد Issue جدید
     async function createDataIssue(data) {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
         const response = await fetch(url, {
@@ -419,7 +292,6 @@
         return await response.json();
     }
 
-    // به‌روزرسانی Issue موجود
     async function updateDataIssue(issueNumber, data) {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${issueNumber}`;
         const response = await fetch(url, {
@@ -439,7 +311,6 @@
         return await response.json();
     }
 
-    // بارگذاری داده از GitHub
     async function loadFromGitHub() {
         try {
             const issue = await findDataIssue();
@@ -454,7 +325,6 @@
         }
     }
 
-    // ذخیره داده در GitHub
     async function saveToGitHub(data) {
         try {
             const issue = await findDataIssue();
@@ -475,7 +345,7 @@
     function loadLocalData() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            try { return JSON.parse(stored); } 
+            try { return JSON.parse(stored); }
             catch (e) { return []; }
         }
         return [];
@@ -486,7 +356,6 @@
     }
 
     function renderTable() {
-        const tbody = document.getElementById('tableBody');
         const data = currentData;
         tbody.innerHTML = '';
 
@@ -515,17 +384,17 @@
 
         data.forEach((item, index) => {
             const tr = document.createElement('tr');
-            
+
             const tdNumber = document.createElement('td');
             tdNumber.className = 'row-number';
             tdNumber.textContent = index + 1;
-            
+
             const tdName = document.createElement('td');
             tdName.textContent = item.firstName || '—';
-            
+
             const tdLast = document.createElement('td');
             tdLast.textContent = item.lastName || '—';
-            
+
             const tdAction = document.createElement('td');
             tdAction.style.textAlign = 'left';
             const deleteBtn = document.createElement('button');
@@ -564,16 +433,16 @@
     }
 
     function addFromInputs() {
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
         if (!firstName && !lastName) {
             alert('لطفاً حداقل یکی از فیلدها را پر کنید.');
             return;
         }
         addRow(firstName, lastName);
-        document.getElementById('firstName').value = '';
-        document.getElementById('lastName').value = '';
-        document.getElementById('firstName').focus();
+        firstNameInput.value = '';
+        lastNameInput.value = '';
+        firstNameInput.focus();
     }
 
     function clearAll() {
@@ -601,13 +470,12 @@
         updateStatus('🔄 در حال همگام‌سازی...', '');
         try {
             const data = await loadFromGitHub();
-            if (data !== null) {
+            if (data !== null && data.length > 0) {
                 currentData = data;
                 saveLocalData(data);
                 renderTable();
                 updateStatus('✅ همگام‌سازی شد', 'success');
             } else {
-                // اگر داده‌ای در GitHub نبود، داده‌های محلی را به GitHub بفرست
                 const localData = loadLocalData();
                 if (localData.length > 0) {
                     await saveToGitHub(localData);
@@ -615,7 +483,6 @@
                     renderTable();
                     updateStatus('✅ داده‌ها به GitHub ارسال شد', 'success');
                 } else {
-                    // هر دو خالی هستند
                     currentData = [];
                     renderTable();
                     updateStatus('📭 داده‌ای وجود ندارد', '');
@@ -624,7 +491,6 @@
         } catch (error) {
             console.error('خطا:', error);
             updateStatus('❌ خطا در همگام‌سازی', 'error');
-            // Fallback به داده‌های محلی
             currentData = loadLocalData();
             renderTable();
         }
@@ -632,14 +498,14 @@
 
     // ========== رویدادها ==========
 
-    document.getElementById('addBtn').addEventListener('click', addFromInputs);
-    document.getElementById('clearBtn').addEventListener('click', clearAll);
+    addBtn.addEventListener('click', addFromInputs);
+    clearBtn.addEventListener('click', clearAll);
     document.getElementById('syncBtn').addEventListener('click', syncWithGitHub);
 
-    document.getElementById('firstName').addEventListener('keydown', (e) => {
+    firstNameInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); }
     });
-    document.getElementById('lastName').addEventListener('keydown', (e) => {
+    lastNameInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); }
     });
 
@@ -647,8 +513,7 @@
 
     async function init() {
         updateStatus('🔄 اتصال به GitHub...', '');
-        
-        // ابتدا از GitHub بخوان
+
         try {
             const data = await loadFromGitHub();
             if (data !== null && data.length > 0) {
@@ -657,7 +522,6 @@
                 renderTable();
                 updateStatus('✅ داده از GitHub بارگذاری شد', 'success');
             } else {
-                // اگر GitHub خالی بود، از LocalStorage بخوان
                 const localData = loadLocalData();
                 if (localData.length > 0) {
                     currentData = localData;
@@ -665,7 +529,6 @@
                     renderTable();
                     updateStatus('✅ داده‌ها به GitHub ارسال شد', 'success');
                 } else {
-                    // اگر هیچ داده‌ای نبود، نمونه‌ها را اضافه کن
                     const samples = [
                         { firstName: 'علی', lastName: 'محمدی' },
                         { firstName: 'سارا', lastName: 'احمدی' },
@@ -698,6 +561,5 @@
     init();
 </script>
 
-    
 </body>
 </html>
