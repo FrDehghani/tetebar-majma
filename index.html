@@ -1,445 +1,338 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>اسامی کاندیدای نمایندگی مجمع عمومی عادی و فوق العاده</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-    }
-    body {
-      background: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 20px;
-      direction: rtl;
-    }
-    .container {
-      max-width: 1200px;
-      width: 100%;
-      background: #ffffff;
-      border-radius: 32px;
-      padding: 30px 25px;
-      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
-    }
-    h1 {
-      text-align: center;
-      font-weight: 400;
-      font-size: 2rem;
-      color: #0f172a;
-      margin-top: 0;
-      margin-bottom: 30px;
-      border-bottom: 2px dashed #d1d9e6;
-      padding-bottom: 20px;
-      letter-spacing: -0.3px;
-    }
-    .tables-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      justify-content: center;
-    }
-    .table-card {
-      flex: 1 1 400px;
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 20px 18px 25px;
-      border: 1px solid #e9edf4;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.02);
-      transition: 0.2s;
-    }
-    .table-card:hover {
-      border-color: #cbd5e1;
-    }
-    .table-card h2 {
-      font-weight: 500;
-      font-size: 1.4rem;
-      color: #0f172a;
-      margin: 0 0 16px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .table-card h2 .badge {
-      background: #eef2f6;
-      padding: 0 14px;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      color: #475569;
-      font-weight: 400;
-    }
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: 18px;
-      border: 1px solid #e2e8f0;
-      background: #fafcfd;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-      min-width: 240px;
-    }
-    th {
-      background: #f1f5f9;
-      color: #1e293b;
-      font-weight: 600;
-      padding: 14px 10px;
-      text-align: right;
-      border-bottom: 2px solid #d1d9e6;
-    }
-    td {
-      padding: 12px 10px;
-      border-bottom: 1px solid #e2e8f0;
-      color: #1e293b;
-    }
-    tr:last-child td {
-      border-bottom: none;
-    }
-    .empty-row td {
-      color: #94a3b8;
-      text-align: center;
-      padding: 20px 10px;
-      font-style: italic;
-    }
-    .row-number {
-      font-weight: 600;
-      color: #1e293b;
-      text-align: center;
-      width: 60px;
-    }
-    .actions {
-      margin-top: 22px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px 8px;
-    }
-    .input-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      flex: 2 1 200px;
-    }
-    .input-group input {
-      flex: 1 1 80px;
-      padding: 10px 14px;
-      border: 1px solid #d1d9e6;
-      border-radius: 40px;
-      font-size: 0.9rem;
-      background: white;
-      transition: 0.2s;
-      outline: none;
-      min-width: 70px;
-    }
-    .input-group input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-    }
-    .btn {
-      background: white;
-      border: 1px solid #d1d9e6;
-      padding: 10px 22px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #1e293b;
-      cursor: pointer;
-      transition: 0.15s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: #f8fafc;
-      white-space: nowrap;
-    }
-    .btn-primary {
-      background: #1e293b;
-      border: 1px solid #1e293b;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #0f172a;
-      border-color: #0f172a;
-    }
-    .btn-primary:active {
-      transform: scale(0.96);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #d1d9e6;
-    }
-    .btn-outline:hover {
-      background: #f1f5f9;
-      border-color: #94a3b8;
-    }
-    .btn-danger {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-      padding: 6px 14px;
-      font-size: 0.8rem;
-      border-radius: 30px;
-    }
-    .btn-danger:hover {
-      background: #fee2e2;
-    }
-    .row-actions {
-      display: flex;
-      gap: 6px;
-      justify-content: flex-end;
-    }
-    .footer-note {
-      margin-top: 30px;
-      text-align: center;
-      color: #64748b;
-      font-size: 0.9rem;
-      border-top: 1px solid #e9edf4;
-      padding-top: 22px;
-    }
-    @media (max-width: 480px) {
-      .container { padding: 15px 10px; }
-      .table-card { padding: 15px 10px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسامی داوطلبان نمایندگی مجمع عمومی عادی و فوق العاده</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 20px;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 30px 25px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            font-weight: 400;
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px dashed #d1d9e6;
+            padding-bottom: 18px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            background: #fafcfd;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-weight: 600;
+            padding: 14px 12px;
+            text-align: right;
+            border-bottom: 2px solid #d1d9e6;
+        }
+        td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .empty-row td {
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px 12px;
+            font-style: italic;
+        }
+        .row-number {
+            font-weight: 600;
+            color: #1e293b;
+            text-align: center;
+            width: 60px;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 8px;
+            margin-top: 5px;
+        }
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            flex: 2 1 200px;
+        }
+        .input-group input {
+            flex: 1 1 80px;
+            padding: 10px 14px;
+            border: 1px solid #d1d9e6;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+            min-width: 70px;
+        }
+        .input-group input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+        .btn {
+            background: white;
+            border: 1px solid #d1d9e6;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: #1e293b;
+            border: 1px solid #1e293b;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0f172a;
+            border-color: #0f172a;
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+        .footer-note {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 20px;
+            border-top: 1px solid #e9edf4;
+            padding-top: 18px;
+        }
+        @media (max-width: 480px) {
+            .container { padding: 15px 12px; }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-  <h1>اسامی داوطلبین نمایندگی مجمع عمومی عادی و فوق العاده تعاونی اعتبار کارکنان وزارت جهاد کشاورزی</h1>
-  <div class="tables-grid">
-    <!-- جدول اول: شماره‌های فرد -->
-    <div class="table-card" id="table1Card">
-      <h2>
-        <span></span><span class="badge"></span>
-      </h2>
-      <div class="table-wrap">
-        <table id="table1">
-          <thead>
-            <tr><th>ریف</th><th>نام</th><th>نام‌خانوادگی</th><th style="width:70px;">عملیات</th></tr>
-          </thead>
-          <tbody id="tbody1">
-            <!-- ردیف‌ها به صورت داینامیک -->
-          </tbody>
+    <h1>اسامی داوطلبان نمایندگی مجمع عمومی عادی و فوق العاده</h1>
+    <div class="table-wrap">
+        <table id="mainTable">
+            <thead>
+                <tr><th>ردیف</th><th>نام</th><th>نام‌خانوادگی</th></tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- ردیف‌ها به صورت داینامیک -->
+            </tbody>
         </table>
-      </div>
-      <div class="actions">
-        <div class="input-group">
-          <input type="text" id="firstName1" placeholder="نام" aria-label="نام">
-          <input type="text" id="lastName1" placeholder="نام‌خانوادگی" aria-label="نام‌خانوادگی">
-        </div>
-        <button class="btn btn-primary" id="addBtn1">➕ افزودن</button>
-        <button class="btn btn-outline" id="resetBtn1"> بازنشانی</button>
-      </div>
     </div>
-
-    <!-- جدول دوم: شماره‌های زوج -->
-    <div class="table-card" id="table2Card">
-      <h2>
-        <span></span>  <span class="badge"></span>
-      </h2>
-      <div class="table-wrap">
-        <table id="table2">
-          <thead>
-            <tr><th>ردیف</th><th>نام</th><th>نام‌خانوادگی</th><th style="width:70px;">عملیات</th></tr>
-          </thead>
-          <tbody id="tbody2">
-            <!-- ردیف‌ها به صورت داینامیک -->
-          </tbody>
-        </table>
-      </div>
-      <div class="actions">
+    <div class="actions">
         <div class="input-group">
-          <input type="text" id="firstName2" placeholder="نام" aria-label="نام">
-          <input type="text" id="lastName2" placeholder="نام‌خانوادگی" aria-label="نام‌خانوادگی">
+            <input type="text" id="firstName" placeholder="نام" aria-label="نام">
+            <input type="text" id="lastName" placeholder="نام‌خانوادگی" aria-label="نام‌خانوادگی">
         </div>
-        <button class="btn btn-primary" id="addBtn2">➕ افزودن</button>
-        <button class="btn btn-outline" id="resetBtn2"> بازنشانی</button>
-      </div>
+        <button class="btn btn-primary" id="addBtn">➕ افزودن</button>
     </div>
-  </div>
-  <div class="footer-note">
-    به مجمع عمومی عادی و فوق العاده شرکت تعاونی اعتبار کارکنان وزارت جهاد کشاورزی خوش آمدید
-  </div>
+    <div class="footer-note">
+        به مجمع عمومی عادی و فوق العاده شرکت تعاونی اعتبار کارکنان وزارت جهاد کشاورزی خوش آمدید
+    </div>
 </div>
 
 <script>
-  (function() {
-    // ---------------------  تابع تولید شماره بر اساس position و offset  ---------------------
-    // offset=1 → فرد (1,3,5,...)   offset=2 → زوج (2,4,6,...)
-    function getRowNumber(index, offset) {
-      // index: 0-based position در جدول (بدون احتساب empty-row)
-      // offset: 1 برای فرد، 0 برای زوج
-      return (index * 2) + offset;
-    }
+    (function() {
+        const tbody = document.getElementById('tableBody');
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const addBtn = document.getElementById('addBtn');
 
-    // ---------------------  مدیر جدول  ---------------------
-    function createTableManager(tbodyId, firstNameId, lastNameId, addBtnId, resetBtnId, offset) {
-      const tbody = document.getElementById(tbodyId);
-      const firstNameInput = document.getElementById(firstNameId);
-      const lastNameInput = document.getElementById(lastNameId);
-      const addBtn = document.getElementById(addBtnId);
-      const resetBtn = document.getElementById(resetBtnId);
+        // ----- تابع سورت کردن ردیف‌ها بر اساس نام‌خانوادگی (الفبای فارسی) -----
+        function sortRows() {
+            // گرفتن تمام ردیف‌های غیر از empty-row
+            const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
 
-      // تابع به‌روزرسانی شماره‌های ردیف (بر اساس offset)
-      function renumberRows() {
-        // حذف empty-row موقت برای شمارش دقیق
-        const emptyRow = tbody.querySelector('.empty-row');
-        let rows = tbody.querySelectorAll('tr:not(.empty-row)');
-        // اگر empty-row وجود داشته باشد، آن را از DOM جدا می‌کنیم تا شمارش تحت تأثیر نباشد
-        const emptyRowExists = emptyRow !== null;
-        if (emptyRowExists) {
-          emptyRow.remove();
-          // دوباره rows را دریافت می‌کنیم (بدون empty-row)
-          rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0) {
+                // اگر ردیفی وجود نداشت، مطمئن شویم empty-row نمایش داده شود
+                showEmptyMessage();
+                return;
+            }
+
+            // مرتب‌سازی بر اساس نام‌خانوادگی (ستون دوم - index 1)
+            rows.sort((a, b) => {
+                const lastNameA = a.querySelectorAll('td')[1]?.textContent.trim() || '';
+                const lastNameB = b.querySelectorAll('td')[1]?.textContent.trim() || '';
+                // مقایسه الفبایی (برای حروف فارسی)
+                return lastNameA.localeCompare(lastNameB, 'fa', { sensitivity: 'base' });
+            });
+
+            // حذف empty-row اگر وجود داشته باشد
+            const emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+
+            // اضافه کردن ردیف‌های مرتب‌شده به tbody
+            rows.forEach(row => tbody.appendChild(row));
+
+            // شماره‌گذاری مجدد
+            renumberRows();
         }
 
-        // به‌روزرسانی شماره در ستون اول هر ردیف
-        rows.forEach((row, index) => {
-          const firstTd = row.querySelector('td:first-child');
-          if (firstTd) {
-            const newNumber = getRowNumber(index, offset);
-            firstTd.textContent = newNumber;
-          }
+        // ----- شماره‌گذاری از ۱ -----
+        function renumberRows() {
+            const rows = tbody.querySelectorAll('tr:not(.empty-row)');
+            rows.forEach((row, index) => {
+                const numberCell = row.querySelector('td:first-child');
+                if (numberCell) {
+                    numberCell.textContent = index + 1;
+                }
+            });
+
+            // اگر ردیفی وجود نداشت، پیام خالی نمایش داده شود
+            if (rows.length === 0) {
+                showEmptyMessage();
+            }
+        }
+
+        // ----- نمایش پیام خالی بودن جدول -----
+        function showEmptyMessage() {
+            // اگر already exists, برمی‌گردیم
+            if (tbody.querySelector('.empty-row')) return;
+
+            const tr = document.createElement('tr');
+            tr.className = 'empty-row';
+            const td = document.createElement('td');
+            td.colSpan = 3;
+            td.textContent = '— سطری وجود ندارد —';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+
+        // ----- افزودن ردیف جدید (با سورت خودکار) -----
+        function addRow(firstName, lastName) {
+            // حذف پیام خالی (اگر وجود داشته باشد)
+            const emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+
+            // ایجاد ردیف جدید
+            const tr = document.createElement('tr');
+            
+            // ستون شماره (موقتاً ۰)
+            const tdNumber = document.createElement('td');
+            tdNumber.className = 'row-number';
+            tdNumber.textContent = '۰';
+            
+            // ستون نام
+            const tdName = document.createElement('td');
+            tdName.textContent = firstName || '—';
+            
+            // ستون نام‌خانوادگی
+            const tdLast = document.createElement('td');
+            tdLast.textContent = lastName || '—';
+
+            tr.appendChild(tdNumber);
+            tr.appendChild(tdName);
+            tr.appendChild(tdLast);
+            
+            // اضافه کردن ردیف به tbody
+            tbody.appendChild(tr);
+
+            // سورت کردن و شماره‌گذاری مجدد
+            sortRows();
+        }
+
+        // ----- افزودن از ورودی‌ها -----
+        function addFromInputs() {
+            const firstName = firstNameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
+            if (!firstName && !lastName) {
+                alert('لطفاً حداقل یکی از فیلدها را پر کنید.');
+                return;
+            }
+            addRow(firstName, lastName);
+            // پاک کردن ورودی‌ها
+            firstNameInput.value = '';
+            lastNameInput.value = '';
+            firstNameInput.focus();
+        }
+
+        // ----- رویدادها -----
+        addBtn.addEventListener('click', addFromInputs);
+        firstNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addFromInputs();
+            }
+        });
+        lastNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addFromInputs();
+            }
         });
 
-        // اگر empty-row وجود داشت و الان ردیفی وجود ندارد، دوباره اضافه کن
-        if (emptyRowExists && rows.length === 0) {
-          tbody.appendChild(emptyRow);
-        } else if (emptyRowExists) {
-          // اگر ردیف وجود داشت و empty-row حذف شده بود، نیازی به برگرداندن نیست
-          // (چون دیگر خالی نیست)
+        // ----- مقداردهی اولیه با چند ردیف نمونه -----
+        function initSample() {
+            const sampleData = [
+
+            ];
+            // اضافه کردن ردیف‌ها (سورت خودکار انجام می‌شود)
+            sampleData.forEach(([f, l]) => {
+                const emptyRow = tbody.querySelector('.empty-row');
+                if (emptyRow) emptyRow.remove();
+                
+                const tr = document.createElement('tr');
+                const tdNumber = document.createElement('td');
+                tdNumber.className = 'row-number';
+                tdNumber.textContent = '۰';
+                const tdName = document.createElement('td');
+                tdName.textContent = f;
+                const tdLast = document.createElement('td');
+                tdLast.textContent = l;
+                tr.appendChild(tdNumber);
+                tr.appendChild(tdName);
+                tr.appendChild(tdLast);
+                tbody.appendChild(tr);
+            });
+            
+            // مرتب‌سازی و شماره‌گذاری
+            sortRows();
         }
-        // در صورتی که ردیف وجود نداشته باشد و empty-row هم نباشد، آن را بساز
-        if (rows.length === 0 && !tbody.querySelector('.empty-row')) {
-          const tr = document.createElement('tr');
-          tr.className = 'empty-row';
-          const td = document.createElement('td');
-          td.colSpan = 4;
-          td.textContent = '— سطری وجود ندارد —';
-          tr.appendChild(td);
-          tbody.appendChild(tr);
-        }
-      }
 
-      // تابع افزودن سطر جدید (با شماره‌دهی خودکار)
-      function addRow(firstName, lastName) {
-        // حذف empty-row اگر وجود داشته باشد
-        const emptyRow = tbody.querySelector('.empty-row');
-        if (emptyRow) emptyRow.remove();
-
-        const tr = document.createElement('tr');
-        // ستون شماره (موقتاً ۰ قرار می‌دهیم، سپس renumber انجام می‌شود)
-        const tdNumber = document.createElement('td');
-        tdNumber.className = 'row-number';
-        tdNumber.textContent = '۰';  // موقت
-        // ستون نام
-        const tdName = document.createElement('td');
-        tdName.textContent = firstName || '—';
-        // ستون نام‌خانوادگی
-        const tdLast = document.createElement('td');
-        tdLast.textContent = lastName || '—';
-        // ستون عملیات (حذف)
-        const tdAction = document.createElement('td');
-        tdAction.style.textAlign = 'left';
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-danger';
-        deleteBtn.textContent = '✕ حذف';
-        deleteBtn.addEventListener('click', function() {
-          const row = this.closest('tr');
-          if (row) {
-            row.remove();
-            renumberRows();  // شماره‌ها را مجدداً محاسبه کن
-          }
-        });
-        tdAction.appendChild(deleteBtn);
-
-        tr.appendChild(tdNumber);
-        tr.appendChild(tdName);
-        tr.appendChild(tdLast);
-        tr.appendChild(tdAction);
-        tbody.appendChild(tr);
-
-        // شماره‌دهی مجدد تمام ردیف‌ها
-        renumberRows();
-      }
-
-      // افزودن از ورودی‌ها
-      function addFromInputs() {
-        const firstName = firstNameInput.value.trim();
-        const lastName = lastNameInput.value.trim();
-        if (!firstName && !lastName) {
-          alert('لطفاً حداقل یکی از فیلدها را پر کنید.');
-          return;
-        }
-        addRow(firstName, lastName);
-        firstNameInput.value = '';
-        lastNameInput.value = '';
-        firstNameInput.focus();
-      }
-
-      // بازنشانی (حذف همه سطرها)
-      function resetTable() {
-        // حذف همه ردیف‌ها به جز empty-row
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach(row => {
-          if (!row.classList.contains('empty-row')) {
-            row.remove();
-          }
-        });
-        // حذف empty-row فعلی و سپس شماره‌دهی (که دوباره empty-row را می‌سازد)
-        const empty = tbody.querySelector('.empty-row');
-        if (empty) empty.remove();
-        renumberRows(); // این تابع در صورت خالی بودن empty-row را می‌سازد
-      }
-
-      // --- رویدادها ---
-      addBtn.addEventListener('click', addFromInputs);
-      firstNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); } });
-      lastNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); } });
-      resetBtn.addEventListener('click', resetTable);
-
-      // --- مقداردهی اولیه: نمونه ردیف‌ها ---
-      function initSample() {
-        // بررسی می‌کنیم که آیا ردیفی وجود دارد (به جز empty-row)
-        const existingRows = tbody.querySelectorAll('tr:not(.empty-row)');
-        if (existingRows.length === 0) {
-          // دو ردیف نمونه اضافه می‌کنیم
-          const samples = [
-            ['امیر', 'حسینی'],
-            ['نازنین', 'کریمی']
-          ];
-          samples.forEach(([f, l]) => addRow(f, l));
-        } else {
-          // فقط شماره‌دهی را به‌روز کن
-          renumberRows();
-        }
-      }
-
-      initSample();
-      // اطمینان از شماره‌دهی صحیح بعد از نمونه‌ها
-      renumberRows();
-
-      // expose برای راحتی (اختیاری)
-      return { addRow, resetTable, renumberRows, addFromInputs };
-    }
-
-    // ---------- راه‌اندازی جدول اول (فرد: offset=1) و جدول دوم (زوج: offset=0) ----------
-    const table1 = createTableManager(
-      'tbody1', 'firstName1', 'lastName1', 'addBtn1', 'resetBtn1', 1   // فرد
-    );
-    const table2 = createTableManager(
-      'tbody2', 'firstName2', 'lastName2', 'addBtn2', 'resetBtn2', 2   // زوج
-    );
-
-    // (دسترسی از کنسول برای دیباگ)
-    window.table1Manager = table1;
-    window.table2Manager = table2;
-  })();
+        // راه‌اندازی
+        initSample();
+    })();
 </script>
 
 </body>
